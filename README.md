@@ -2,7 +2,7 @@
 
 This is an implementation of the K Means Clustering algorithm: it's mainly motivated by the fact that I wanted to understand better the algo itself.
 
-The implemenation was inspared by: https://github.com/akabe/ocaml-numerical-analysis/tree/master/k-means,
+The implemenation was inspired by: https://github.com/akabe/ocaml-numerical-analysis/tree/master/k-means (which is also the source of the data in the dataset file),
 but along the way I decided to introduce some changes:
 
 1. avoid mutable state
