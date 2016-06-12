@@ -4,8 +4,8 @@ This is an implementation of the K Means Clustering algorithm: it's mainly motiv
 
 The implemenation was inspared by: https://github.com/akabe/ocaml-numerical-analysis/tree/master/k-means,
 but along the way I decided to introduce some changes:
-1. avoid mutable state,
-2. make some concept more explicit (cluster, distance function etc),
+1. avoid mutable state
+2. make some concept more explicit (cluster, distance function etc)
 
 In the next iteration I would like:
 1. introduce a signature for the clustering module
