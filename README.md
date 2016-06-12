@@ -9,7 +9,8 @@ but along the way I decided to introduce some changes:
 
 2. make some concept more explicit (cluster, distance function etc)
 
-In the next iteration I would like:
+In the next iterations, I would like:
+
 1. introduce a signature for the clustering module
 
 2. split the test.ml in diffent file, one for each module
