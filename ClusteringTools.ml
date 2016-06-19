@@ -1,5 +1,12 @@
 open IterativeTools
-       
+
+module type Clusterable = sig
+  type t
+
+  val computeDistance: t -> t -> float
+  val computeCenter: t list -> t 
+end
+                            
 module type CluterIterable=sig
   include Iterable
 

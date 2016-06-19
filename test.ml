@@ -3,7 +3,7 @@ open OUnit
 open ListExt
 open IterativeTools
 
-module FloatClusterable:(Clusterable with type t=float)=struct
+module FloatClusterable:(ClusteringTools.Clusterable with type t=float)=struct
   type t=float
 
   let computeDistance (x:float) (y:float) = (x-.y)*.(x-.y)
@@ -16,7 +16,7 @@ module FloatKMeansClusterable=ClusteringTools.Make(FloatClusterable)
                                        
 module FloatClusteringIterativeRunner=IterativeTools.Make(FloatKMeansClusterable)
 
-module FloatArrayClusterable:(Clusterable with type t=float array * int)=struct
+module FloatArrayClusterable:(ClusteringTools.Clusterable with type t=float array * int)=struct
   type t=float array * int
 
   let computeCenter l = 
@@ -38,7 +38,6 @@ end
 module FloatArrayKMeansClusterable=ClusteringTools.Make(FloatArrayClusterable)
                                        
 module FloatArrayClusteringIterativeRunner=IterativeTools.Make(FloatArrayKMeansClusterable)
-
 
 (*---------*)
 module ClusterPrinting = struct

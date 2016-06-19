@@ -1,10 +1,4 @@
-module type Clusterable = sig
-  type t
-
-  val computeDistance: t -> t -> float
-  val computeCenter: t list -> t 
-end
-                            
+                           
 module type Iterable = sig
   type t
  
