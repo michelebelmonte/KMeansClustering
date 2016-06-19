@@ -1,3 +1,8 @@
+(** Clustring data set
+    This data set contains three classes that are generated according to
+    two-dimensional Gaussian distribution.
+*)
+
 let n_classes = 3
 
 let samples = [|
