@@ -9,14 +9,18 @@ but along the way I decided to introduce some changes:
 
 2. make some concept more explicit (cluster, distance function etc) (even though the code is now less compact)
 
+The main files of the project are:
+
+1. ClusteringTools.ml: this contains the logic to execute clustering on list of items.
+
+2. IterativeTools: this contains the logic to run an iterative computation.
+
+Using the signatures contained in ClusteringTools, one defines types for which we want to execute a cluseting, while IterativeTools defines how a centain computation can run iteratively: implementing the CluterIterable we can run clustering as an iterative process.
+
 In the next iterations, I would like:
 
-1. introduce a signature for the clustering module
+1. split the test.ml in diffent file, one for each module
 
-2. split the test.ml in diffent file, one for each module
+2. improve comments
 
-3. use functors to generate the clustering module, instead of passing functions as parameters for the initialize function
-
-4. improve comments
-
-5. improve building
+3. improve building
