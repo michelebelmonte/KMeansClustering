@@ -15,7 +15,7 @@ The main files of the project are:
 
 2. IterativeTools: this contains the logic to run an iterative computation.
 
-Using the signatures contained in ClusteringTools, one defines types for which we want to execute a cluseting, while IterativeTools defines how a centain computation can run iteratively: implementing the CluterIterable we can run clustering as an iterative process.
+Using the signatures contained in ClusteringTools, one defines types for which he wants to execute a clustering computaion, while IterativeTools defines how a centain computation can run iteratively: implementing the CluterIterable we can run clustering as an iterative process.
 
 In the next iterations, I would like:
 
