@@ -1,12 +1,20 @@
 open IterativeTools
 
+(*this defines a module on which we can run a clustering algorithm.
+It contains a type and two functions:
+  1. computeDistance: returns a float representing the distance between two t values
+  2. computeCenter: given a list of t values, returns the center.
+    e.g. the center can be the everage or the centroid of the list.*)
 module type Clusterable = sig
   type t
 
   val computeDistance: t -> t -> float
   val computeCenter: t list -> t 
 end
-                            
+  
+(*this extends Clusterable, so it can be used in an iterative process.
+initialize create k initial clusters,  using the e list values.
+getCenters return the list of the centers.*)                          
 module type CluterIterable=sig
   include Iterable
 
