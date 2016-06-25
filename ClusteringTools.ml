@@ -1,27 +1,19 @@
 open IterativeTools
 
-(*this defines a module on which we can run a clustering algorithm.
-It contains a type and two functions:
-  1. computeDistance: returns a float representing the distance between two t values
-  2. computeCenter: given a list of t values, returns the center.
-    e.g. the center can be the everage or the centroid of the list.*)
 module type Clusterable = sig
   type t
 
-  val computeDistance: t -> t -> float
-  val computeCenter: t list -> t 
+  val compute_distance: t -> t -> float
+  val compute_center: t list -> (t option)
 end
-  
-(*this extends Clusterable, so it can be used in an iterative process.
-initialize create k initial clusters,  using the e list values.
-getCenters return the list of the centers.*)                          
+                            
 module type CluterIterable=sig
   include Iterable
 
   type e
   val initialize: e list -> int -> t
 
-  val getCenters: t -> e list
+  val get_clusters: t -> (e * e list) list
 end
 
 module Make(X:Clusterable):(CluterIterable with type e:=X.t)=struct
@@ -34,44 +26,44 @@ module Make(X:Clusterable):(CluterIterable with type e:=X.t)=struct
 
   type t={clusters:cluster list; items:X.t list}
 
-  let distFun=X.computeDistance
-  let centerFun=X.computeCenter
+  let distFun=X.compute_distance
+  let centerFun=X.compute_center
 
-  let getCenters v = List.map (fun x -> x.center) v.clusters
+  let get_clusters v = List.map (fun x -> (x.center,x.items)) v.clusters
                               
   (* creates a cluster containig just the center.
 items list is empty, and so totalDistance is 0.0*)
-  let create center =
+  let create_empty_cluster center =
     {center=center;totalDistance=0.0;items=[]}
 
 (* adds an item to the cluter.
 the items list is update, and the distance is added to the totalDistance*)
-  let add {center;totalDistance;items} item distance =
+  let add_item_to_cluster {center;totalDistance;items} item distance =
     {center=center;totalDistance=totalDistance+.distance;items=item::items}
 
 
 (* creates a list of empty clustes, given a list of centers*)
-  let create centers =
-    List.map (fun x -> create x) centers
+  let create_cluster_from_centers centers =
+    List.map (fun x -> create_empty_cluster x) centers
 
 
 (* assigns an item to a cluster that:
 1. belongs to clusters
 2. minimizes the distance between the item and the center of the cluster*)
-let assign item clusters  = 
+let assign_item_to_cluster item clusters  = 
   let min= List.min (fun {center;_} -> distFun item center) clusters in
   match min with
     | None -> clusters
     | Some (cluster,distance) ->
-      let cluster'=add cluster item distance in
+      let cluster'=add_item_to_cluster cluster item distance in
       let clusters'= List.filter (fun x -> x <> cluster) clusters in
       cluster'::clusters'
     
 
 (*assign the item l to the cluster whose center minimize the value of dist.
 Return a new cluster list updated*)
-let assignAll ~items clusters=
-  List.fold_left (fun clusters x -> assign x clusters ) clusters items
+let assign_items_to_clusters ~items clusters=
+  List.fold_left (fun clusters x -> assign_item_to_cluster x clusters ) clusters items
 
 
 (* creates k clusters given an items list.
@@ -80,27 +72,28 @@ items are assogned to the clusters so that the distFun is minimized.*)
 let init items k =
   List.shuffle items
   |> List.take k
-  |> create
+  |> create_cluster_from_centers
 
 
-let getOverallDistance clusters =
+let get_overall_distance clusters =
   List.fold_left (fun state cluster -> state +. cluster.totalDistance) 0.0 clusters
     
 (*given an items list create the initial clustering state*)
 let initialize (items:X.t list) (k:int): t  =
-  let clusters=init items k |> assignAll ~items in
+  let clusters=init items k |> assign_items_to_clusters ~items in
 
   {clusters=clusters; items=items}
 
 (* given a list l of items t produces k mean clusters*)
-let next s =
+let get_next s =
       let clusters'=
-        List.map (fun {center; totalDistance;items} -> centerFun items) s.clusters
-        |> create
-        |> assignAll ~items:s.items in
+        List.map (fun {center; totalDistance;items} -> centerFun items) s.clusters 
+        |> List.fold_left (fun acc x -> match x with | Some c -> c::acc | None -> acc) []
+        |> create_cluster_from_centers
+        |> assign_items_to_clusters ~items:s.items in
       { s with clusters=clusters'}
 
-let hasNext prev current =
-  getOverallDistance current.clusters < getOverallDistance prev.clusters
+let has_next prev current =
+  get_overall_distance current.clusters < get_overall_distance prev.clusters
                                                            
 end

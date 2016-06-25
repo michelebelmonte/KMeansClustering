@@ -6,10 +6,10 @@ open IterativeTools
 module FloatClusterable:(ClusteringTools.Clusterable with type t=float)=struct
   type t=float
 
-  let computeDistance (x:float) (y:float) = (x-.y)*.(x-.y)
-  let computeCenter l=
+  let compute_distance (x:float) (y:float) = (x-.y)*.(x-.y)
+  let compute_center l=
     let sum = List.fold_left (fun state x -> state +. x) 0.0 l in
-    sum /. (float_of_int (List.length l))
+    Some (sum /. (float_of_int (List.length l)))
 end
 
 module FloatKMeansClusterable=ClusteringTools.Make(FloatClusterable)
@@ -19,17 +19,17 @@ module FloatClusteringIterativeRunner=IterativeTools.Make(FloatKMeansClusterable
 module FloatArrayClusterable:(ClusteringTools.Clusterable with type t=float array * int)=struct
   type t=float array * int
 
-  let computeCenter l = 
+  let compute_center l = 
         let sum = List.fold_left (fun state (x,_) -> state.(0) <- state.(0) +. x.(0);state.(1) <- state.(1) +. x.(1);state) [|0.0;0.0|] l in
-        let length= List.length l in
-        let x =sum.(0) /. (float_of_int length) in
-        let y=sum.(1) /. (float_of_int length) in
-        ([|x;y|],0)
+        let length = List.length l in
+        let x = sum.(0) /. (float_of_int length) in
+        let y = sum.(1) /. (float_of_int length) in
+        Some ([|x;y|],0)
 
 
-  let computeDistance (arr0,_) (arr1,_) =
+  let compute_distance (arr0,_) (arr1,_) =
         let deltaX=arr0.(0)-. arr1.(0) in
-        let deltaY=arr0.(1)-.arr1.(1) in
+        let deltaY=arr0.(1)-. arr1.(1) in
         let squaredDistance=deltaX*.deltaX +.deltaY*.deltaY in
         sqrt squaredDistance
              
@@ -44,9 +44,9 @@ module ClusterPrinting = struct
   let rec printCenters l =
     match l with
     | [] -> ()
-    | (arr,_)::tl ->
+    | ((arr,_),items)::tl ->
        begin
-       printf "  Center: %f %f" arr.(0) arr.(1); print_newline ();
+       printf "  Center of %d items: %f %f" (List.length items) arr.(0) arr.(1); print_newline ();
        printCenters tl;
        end
        
@@ -59,7 +59,7 @@ module ClusterPrinting = struct
      | Converged -> print_endline "Converged";
      | NonConverged -> print_endline "Non Converged";);
 
-    FloatArrayKMeansClusterable.getCenters state.value |> printCenters;
+    FloatArrayKMeansClusterable.get_clusters state.value |> printCenters;
     
 end
 
@@ -129,4 +129,57 @@ let () =
       loop v0 100;
     end
   end
+
+module DtwClusterable=ClusteringTools.Make(DinamicTimeWrap)
+
+module DtwIterable=IterativeTools.Make(DtwClusterable)
+
+module DtwClusterPrinting = struct
+  let rec printCenters l =
+    match l with
+    | [] -> ()
+    | (arr,items)::tl ->
+       begin
+         printf "  Center of %d items: " (List.length items);
+         List.iter (fun x -> printf "%f, " x) arr;
+         print_newline ();
+         printCenters tl;
+       end
        
+  let printCustomState state =
+    let open DtwIterable in
+    printf "Iteration number %d" state.DtwIterable.index; print_newline ();
+
+    print_string "  Status: ";
+    (match state.DtwIterable.state with
+     | Converged -> print_endline "Converged";
+     | NonConverged -> print_endline "Non Converged";);
+
+    DtwClusterable.get_clusters state.value |> printCenters;
+    
+end
+                                      
+let () =
+  let rec loop state iterToGo =
+      if (iterToGo<0) then
+        ()
+      else
+        let nextState=DtwIterable.iterate state in
+        begin
+          DtwClusterPrinting.printCustomState nextState;
+        match nextState.DtwIterable.state with
+        | DtwIterable.Converged -> ()
+        | DtwIterable.NonConverged -> loop nextState (iterToGo-1)
+        end in
+  let values = [[1.0;2.0;3.0;2.0;1.0;1.0];
+                [1.0;1.0;1.0;20.0;1.0;1.0];
+                [1.0;1.0;2.0;3.0;2.0;1.0];
+                [2.0;3.0;2.0;1.0;1.0];
+                [1.0;1.0;1.0;21.0;1.0;1.0];
+                [1.0;1.0;1.0;18.0;1.0;1.0];
+               ] in
+  let k = 2 in
+  let c0=DtwClusterable.initialize values k in
+  let v0=DtwIterable.init c0 in
+  DtwClusterPrinting.printCustomState v0;
+  loop v0 100;

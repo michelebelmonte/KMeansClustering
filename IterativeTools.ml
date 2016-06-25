@@ -2,8 +2,8 @@
 module type Iterable = sig
   type t
  
-  val next: t -> t
-  val hasNext: t -> t -> bool
+  val get_next: t -> t
+  val has_next: t -> t -> bool
 end
                                                                                  
 module type IterationRunner=sig
@@ -22,8 +22,8 @@ module Make(X:Iterable):(IterationRunner with type t:=X.t) = struct
                                
     type iteration ={state:state; index:int;value:X.t}
 
-    let next=X.next
-    let hasNext=X.hasNext
+    let next=X.get_next
+    let hasNext=X.has_next
                   
     let init v ={state=NonConverged;index=0;value=v}
                   
